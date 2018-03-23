@@ -1,2 +1,5 @@
 *.sql
 *.pyc
+notes.txt
+*.log
+__pycache__

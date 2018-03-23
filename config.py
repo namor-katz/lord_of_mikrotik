@@ -1,0 +1,5 @@
+login = 'admin'
+password = 'li8fulohLal'
+host = '192.168.88.1'
+token = '538818154:AAGDaVmgzS4_epuoP0dEplNfdwAXerAxA0k'
+bot_admin_password = 'Zie4sheiK9Va'
