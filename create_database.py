@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from peewee import *
-#import sys
+
 import os
-#import time
-#from os.path import expanduser
-#import argparse
 import sqlite3
-#import config
+
 
 #db = SqliteDatabase('database.sql')
 #db = ('database.sql')
@@ -68,7 +64,7 @@ def add_admin(password, username):
 def who_poweroff():
     conn = sqlite3.connect('database.sql')
     cursor = conn.cursor()
-    cursor.execute("SELECT id, user_name FROM vpn_user WHERE date_off <= strftime('%s', 'now')")
+    cursor.execute("SELECT username FROM vpn_user WHERE date_off <= strftime('%s', 'now')")
     result = cursor.fetchall()
     conn.close()
     return result
@@ -90,8 +86,8 @@ def whois(username):
     cursor = conn.cursor()
     cursor.execute("SELECT username_telegram, level FROM bot WHERE username_telegram = ?", (username,))
     results = cursor.fetchone()
-    print(results)
-    print(type(results))
+    #print(results)
+    #print(type(results))
     #print(type(results))
     if results == None:
         pass

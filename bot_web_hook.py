@@ -53,9 +53,10 @@ def webhook():
 
 
 # event handling from keyboard
-text_help = '/count - количество юзеров, всего; \n /count_activ - активных юзеров; \n \
+text_help = '/count - количество юзеров, всего; \n /count_a - активных юзеров; \n \
 /list - показать имена всех; \n /list_a - показать имена активных; \n /create - создать нового юзера \n \
-/disable - запретить юзера; \n /delete - удалить юзера'
+/delete - удалить юзера \n /disable - запретить юзера; \n /enable - разрешить юзера \n /add_admin - добавить нового администратора \n \
+/list_connect - кто подключен сейчас? \n /list_admins - список админов \n /my_time - сколько осталось времени? \n '
 
 text_no_id = 'увы, я тебя не знаю.'
 
@@ -146,6 +147,8 @@ def create_user(message):
     if au[0] == True and au[1] <= 1:
         text = message.text[7:]
         text = text.strip()
+        from generation_name2 import create_name
+        zero_name = create_name()
         #print('я голый текст')
         if text == None:
             duration = 3600
@@ -159,12 +162,33 @@ def create_user(message):
             duration = 3600
         else:
             #print('не поверишь, но ты тут')
-            bot.send_message(message.chat.id, 'это не число. задай число.')
-            exit()
+            #add create_mit_name
+            from create_mit_name import create_mit_name
+            #print('а я текст который прилетит',  text)
+            row_name = create_mit_name(text)
+            #print('я есть полученный текст в мит',  row_name)
+            #print(type(row_name))
+            
+            duration = row_name[1]
+            duration = int(duration)
+            #print('я дуратион,',   duration,  'мой тип',  type(duration))
+            zero_name = row_name[0]
+            #print('я зеро нейм',  zero_name)
+            bot.send_message(message.chat.id, 'пробуем принять имя')
+            #exit()
         
-        a = api_test3.create_vpn_user(duration)
-        b = str(a)
-        bot.send_message(message.chat.id, b)
+        #zero_name = ''
+        a = api_test3.create_vpn_user(zero_name,  duration)
+        b = a['name']
+        b = str(b)
+        #print('имя',  b)
+        #print(type(b))
+        c = a['password']
+        c = str(c)
+        #print(b)
+        #print(c)
+        d = 'логин ' + b + ' пароль ' + c
+        bot.send_message(message.chat.id, d)
     else:
         bot.send_message(message.chat.id, 'что то не то с правами. не буду создавать')
         pass
@@ -186,6 +210,7 @@ def delete_name(message):
     au = whois(message.chat.username)
     if au[0] == True and au[1] <= 1:
         text = get_name_u(message, 7)
+        #print('в смысле нот тайп',  text)
         text = text.strip()
         a = api_test3.remove_vpn_user(text)
         if a == True:
@@ -244,28 +269,38 @@ def enable_user(message):
 
 @bot.message_handler(commands=['auth'])
 def auth_admin(message):
+    '''this function adds the first administrator'''
     password = message.text[5:]
     if len(password) == 0:
         bot.send_message(message.chat.id, 'не вижу пароля. не пущу.')
     else:
         from create_database import add_admin
         password = password.strip()
-        add_admin(password, message.chat.username)
+        a = add_admin(password, message.chat.username)
+        if a == True:
+            bot.send_message(message.chat.id,  'администратор добавлен')
+        else:
+            bot.send_message(message.chat.id,  'увы, я никого не добавил')
         #print(password,  message.chat.username)
         #print(type(message.chat.username))
 
 @bot.message_handler(commands=['add_admin'])
 def add_admin(message):
-    '''add new admin from bot'''
+    '''this function add new admin from bot'''
     au = whois(message.chat.username)
     if au[0] == True and au[1] <= 0:
         raw_name = message.text[10:]
         raw_name2 = raw_name.strip()
         raw_name3 = re.sub(r'\s+', ' ', raw_name2)
-        raw_name4 = raw_name3.split(' ') #if mane str - many elements in corteg
-        name_level = raw_name.split(' ')
-        name = name_level[1]
-        level = name_level[2]
+        #raw_name4 = raw_name3.split(' ') #if mane str - many elements in corteg
+        name_level = raw_name3.split(' ')
+        #print(len(name_level))
+        if len(name_level) == 2:
+            name = name_level[0]
+            level = name_level[1]
+        else:
+            bot.send_message(message.chat.id,  'нужно указать телеграм-нейм нового админа и его левел')
+            exit()
         from create_database import add_admin_mikrotik
         result = add_admin_mikrotik(name, level)
         if result == True:
@@ -307,21 +342,25 @@ def list_admins(message):
 def my_time(message):
     '''this function print left time'''
     from api_test3 import time_left
-    text = get_name_u(message, 8)
-    text = text.strip()
+    text = get_name_u(message, 8) #тут влетает 'имя не указано, удалять нечего' из get_name_u
+    #print('я текст из май тайм',  text)
+    if text == None:
+        bot.send_message(message.chat.id,  'не указано имя, показывать нечего')
+        exit()
+    else:
+        text = text.strip()
     
     a = time_left(text)
     print(a)
     #a = a[0]
     if a > 0:
-        time_o = a
+        time_o = a / 60
+        time_o = int(time_o)
+        time_o = str(time_o) + ' минут осталось'
     else:
         time_o = 'ваше время истекло'
     
     bot.send_message(message.chat.id, time_o)
-
-
-
 
 # Снимаем вебхук перед повторной установкой (избавляет от некоторых проблем)
 bot.remove_webhook()
