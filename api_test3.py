@@ -147,21 +147,25 @@ def remove_vpn_user(name_input):
     
 
 #create user vpn
-def create_vpn_user(duration=3600):
+def create_vpn_user(vpn_name = '',  duration=3600):
     #users = api(cmd='/ppp/secret/print')
     params = {'profile' : 'default', 'service' : 'pptp'}
     import generation_pass
-    import generation_name2
     vpn_pass = generation_pass.create_password()
-    vpn_name = generation_name2.create_name()
+    print(vpn_name)
+    if len(vpn_name) == 0:
+        import generation_name2
+        vpn_name = generation_name2.create_name()
+    else:
+        vpn_name = vpn_name
     
     params['name'] = vpn_name
     params['password'] = vpn_pass
     api(cmd='/ppp/secret/add', **params)
     #from create_database import add_user_in_database
     #add_user_in_database(vpn_name)
-    from add_time import add_data
-    add_data(vpn_name,  duration)
+    from add_time import add_data2
+    add_data2(vpn_name,  duration)
     #date_create = a[0]
     #date_off = a[1]
     from create_database import add_user_in_database
@@ -172,7 +176,7 @@ def create_vpn_user(duration=3600):
     date_off(delta)
     '''
     return params
-    #!! added to database
+
 
 #list profile print
 def list_profile():
