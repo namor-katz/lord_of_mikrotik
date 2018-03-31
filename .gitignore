@@ -4,3 +4,4 @@ notes.txt
 *.log
 __pycache__
 config.py
+list.txt
