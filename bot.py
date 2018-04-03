@@ -20,38 +20,6 @@ from time  import sleep
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console.
 
-#set environment from web hooks
-WEBHOOK_HOST = '138.201.174.71'
-WEBHOOK_PORT = 8443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
-WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
-
-WEBHOOK_SSL_CERT = 'webhook_cert.pem'  # Путь к сертификату
-WEBHOOK_SSL_PRIV = 'webhook_key.pem'  # Путь к приватному ключу
-
-WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
-WEBHOOK_URL_PATH = "/%s/" % (config.token)
-
-bot = telebot.TeleBot(config.token)
-
-app = flask.Flask(__name__)
-
-#Empty webserver index, return nothing, just http 200
-@app.route('/',  methods=['GET',  'HEAD'])
-def index():
-    return ''
-    
-# Process webhook calls
-@app.route(WEBHOOK_URL_PATH, methods=['POST'])
-def webhook():
-    if flask.request.headers.get('content-type') == 'application/json':
-        json_string = flask.request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return ''
-    else:
-        flask.abort(403)
-
-
 # event handling from keyboard
 text_help = '/count - количество юзеров, всего; \n /count_a - активных юзеров; \n \
 /list - показать имена всех; \n /list_a - показать имена активных; \n /create - создать нового юзера \n \
