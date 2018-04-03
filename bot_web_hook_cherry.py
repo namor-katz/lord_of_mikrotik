@@ -30,14 +30,14 @@ with open (pid_file,  'w',  encoding='utf-8') as ff:
     ff.write(your_pid)
 
 #set environment from web hooks
-WEBHOOK_HOST = '138.201.174.71'
-WEBHOOK_PORT = 8443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
-WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
+#WEBHOOK_HOST = '138.201.174.71'
+#WEBHOOK_PORT = 8443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
+WEBHOOK_LISTEN = config.WEBHOOK_LISTEN
 
-WEBHOOK_SSL_CERT = 'webhook_cert.pem'  # Путь к сертификату
-WEBHOOK_SSL_PRIV = 'webhook_key.pem'  # Путь к приватному ключу
+WEBHOOK_SSL_CERT = config.WEBHOOK_SSL_CERT  # Путь к сертификату
+WEBHOOK_SSL_PRIV = config.WEBHOOK_SSL_PRIV  # Путь к приватному ключу
 
-WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
+WEBHOOK_URL_BASE = "https://%s:%s" % (config.WEBHOOK_HOST, config.WEBHOOK_PORT)
 WEBHOOK_URL_PATH = "/%s/" % (config.token)
 
 bot = telebot.TeleBot(config.token)
