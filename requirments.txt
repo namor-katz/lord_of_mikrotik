@@ -2,3 +2,4 @@ pyTelegramBotAPI==3.6.0
 librouteros==2.0.0
 mimesis==2.0.0
 CherryPy==14.0.1
+pyOpenSSL==17.5.0

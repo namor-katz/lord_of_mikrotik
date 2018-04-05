@@ -7,7 +7,6 @@
 #test bot from my mikrotik
 
 import telebot
-import config
 from telebot import types
 import logging
 import api_test3
@@ -16,11 +15,22 @@ import re
 from time  import sleep
 import cherrypy
 from os import getpid
+import os
 
 #loggin in console
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console.
 
+
+'''
+# check cert files
+filename = 'webhook.crt'
+if os.access(filename, os.F_OK) == True:
+    pass
+else:
+    from create_cert import create_self_signed_cert
+    create_self_signed_cert()
+'''
 
 #create pid file
 your_pid = getpid()
@@ -31,7 +41,8 @@ with open (pid_file,  'w',  encoding='utf-8') as ff:
 
 #set environment from web hooks
 #WEBHOOK_HOST = '138.201.174.71'
-#WEBHOOK_PORT = 8443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
+import config
+WEBHOOK_PORT = config.WEBHOOK_PORT  # 443, 80, 88 или 8443 (порт должен быть открыт!)
 WEBHOOK_LISTEN = config.WEBHOOK_LISTEN
 
 WEBHOOK_SSL_CERT = config.WEBHOOK_SSL_CERT  # Путь к сертификату
@@ -173,7 +184,7 @@ def create_user(message):
             row_name = create_mit_name(text)
             #print('я есть полученный текст в мит',  row_name)
             #print(type(row_name))
-            
+
             duration = row_name[1]
             duration = int(duration)
             #print('я дуратион,',   duration,  'мой тип',  type(duration))
@@ -181,7 +192,7 @@ def create_user(message):
             #print('я зеро нейм',  zero_name)
             bot.send_message(message.chat.id, 'пробуем принять имя')
             #exit()
-        
+
         #zero_name = ''
         a = api_test3.create_vpn_user(zero_name,  duration)
         b = a['name']
@@ -197,13 +208,13 @@ def create_user(message):
     else:
         bot.send_message(message.chat.id, 'что то не то с правами. не буду создавать')
         pass
-    
-    
-    
-    #print(text, 'это сырое число')
-    
 
-        
+
+
+    #print(text, 'это сырое число')
+
+
+
     #text = int(text)
     #print(text)
 
@@ -238,7 +249,7 @@ def disable_user(message):
     if au[0] == True and au[1] <= 1:
         text = get_name_u(message, 8)
         text = text.strip()
-        
+
         a = api_test3.disable_vpn_user(text)
         if a == True:
             from api_test3 import close_connection
@@ -249,7 +260,7 @@ def disable_user(message):
     else:
         bot.send_message(message.chat.id, text_no_id)
         pass
-        
+
 #enable user vpn
 @bot.message_handler(commands=['enable'])
 def enable_user(message):
@@ -317,7 +328,7 @@ def add_admin(message):
     else:
         bot.send_message(message.chat.id, text_no_id)
         pass
-    
+
 
 @bot.message_handler(commands=['list_connect'])
 def list_connect(message):
@@ -354,7 +365,7 @@ def my_time(message):
         exit()
     else:
         text = text.strip()
-    
+
     a = time_left(text)
     print(a)
     #a = a[0]
@@ -364,7 +375,7 @@ def my_time(message):
         time_o = str(time_o) + ' минут осталось'
     else:
         time_o = 'ваше время истекло'
-    
+
     bot.send_message(message.chat.id, time_o)
 
 # Снимаем вебхук перед повторной установкой (избавляет от некоторых проблем)
@@ -374,7 +385,7 @@ sleep(3)
 # set webhook
 bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
                 certificate=open(WEBHOOK_SSL_CERT, 'r'))
-                
+
 # Указываем настройки сервера CherryPy
 cherrypy.config.update({
     'server.socket_host': WEBHOOK_LISTEN,

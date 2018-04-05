@@ -5,3 +5,6 @@ notes.txt
 __pycache__
 config.py
 list.txt
+*.pem
+*.crt
+*.key
