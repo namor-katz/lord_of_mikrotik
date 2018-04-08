@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 #  generation_name.py
@@ -22,15 +22,13 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console.
 
 
-'''
-# check cert files
+# check cert files if not - create
 filename = 'webhook.crt'
 if os.access(filename, os.F_OK) == True:
     pass
 else:
     from create_cert import create_self_signed_cert
     create_self_signed_cert()
-'''
 
 #create pid file
 your_pid = getpid()
@@ -75,6 +73,39 @@ text_help = '/count - количество юзеров, всего; \n /count_a
 /list_connect - кто подключен сейчас? \n /list_admins - список админов \n /my_time - сколько осталось времени? \n '
 
 text_no_id = 'увы, я тебя не знаю.'
+#create castom keyboard
+markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+itembtn1 = types.KeyboardButton('администраторы')
+itembtn2 = types.KeyboardButton('пользователи')
+markup.add(itembtn1, itembtn2)
+#bot.send_message(m.chat.id, "нажми любую кнопку", reply_markup=markup)
+
+markup2 = types.ReplyKeyboardMarkup(row_width=3,  resize_keyboard=True) #submenu users
+itembtn1 = types.KeyboardButton('создать')
+itembtn2 = types.KeyboardButton('удалить')
+itembtn3 = types.KeyboardButton('запретить')
+itembtn4 = types.KeyboardButton('разрешить')
+itembtn5 = types.KeyboardButton('подключенные')
+itembtn6 = types.KeyboardButton('всего')
+markup2.add(itembtn1, itembtn2,  itembtn3,  itembtn4,  itembtn5,  itembtn6)
+
+markup3 = types.ReplyKeyboardMarkup(row_width=3,  resize_keyboard=True) #submenu admins
+itembtn1 = types.KeyboardButton('добавить')
+itembtn2 = types.KeyboardButton('список')
+itembtn3 = types.KeyboardButton('главное_меню')
+markup3.add(itembtn1, itembtn2)
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id,  'нажми любую кнопку',  reply_markup=markup)
+
+@bot.message_handler(regexp='администраторы')
+def administrators(message):
+    bot.send_message(message.chat.id,  'вы в меню администраторы',  reply_markup=markup3)
+
+@bot.message_handler(regexp='пользователи')   
+def users(message):
+    bot.send_message(message.chat.id,  'вы в меню пользователи',  reply_markup=markup2)
 
 @bot.message_handler(commands=['help'])
 def help_for_bot(message):
@@ -88,7 +119,7 @@ def help_for_bot(message):
         bot.send_message(message.chat.id, text_no_id)
 
 
-@bot.message_handler(commands=['count'])
+@bot.message_handler(regexp='всего')
 def count_all_user(message):
     a = whois(message.chat.username)
     if a[0] == True and a[1] <= 1:
@@ -154,19 +185,22 @@ def get_name_u(message, shear):
         return text
 
 #create new user vpn
-@bot.message_handler(commands=['create'])
+@bot.message_handler(regexp='создать')
 def create_user(message):
     '''this function create new user vpn, set random name - cocteil
     and generation password. send it in chat'''
     au = whois(message.chat.username)
-    #print('я твое имя', au)
     if au[0] == True and au[1] <= 1:
         text = message.text[7:]
         text = text.strip()
+        print(text)
         from generation_name2 import create_name
         zero_name = create_name()
-        #print('я голый текст')
         if text == None:
+            #
+            bot.send_message(message.chat.id,  'задай имя')
+            text = message.text[7:]
+            #
             duration = 3600
         elif text.isdigit() == True:
             #print('это же число!')
@@ -175,48 +209,33 @@ def create_user(message):
             else:
                 duration = int(text) * 3600
         elif len(text) == 0:
+            #
+            bot.send_message(message.chat.id,  'задай имя')
+            text = message.text[7:]
+            #
             duration = 3600
         else:
-            #print('не поверишь, но ты тут')
-            #add create_mit_name
             from create_mit_name import create_mit_name
             #print('а я текст который прилетит',  text)
             row_name = create_mit_name(text)
-            #print('я есть полученный текст в мит',  row_name)
-            #print(type(row_name))
-
             duration = row_name[1]
             duration = int(duration)
             #print('я дуратион,',   duration,  'мой тип',  type(duration))
             zero_name = row_name[0]
             #print('я зеро нейм',  zero_name)
             bot.send_message(message.chat.id, 'пробуем принять имя')
-            #exit()
 
-        #zero_name = ''
+            #exit()
         a = api_test3.create_vpn_user(zero_name,  duration)
         b = a['name']
         b = str(b)
-        #print('имя',  b)
-        #print(type(b))
         c = a['password']
         c = str(c)
-        #print(b)
-        #print(c)
         d = 'логин ' + b + ' пароль ' + c
         bot.send_message(message.chat.id, d)
     else:
         bot.send_message(message.chat.id, 'что то не то с правами. не буду создавать')
         pass
-
-
-
-    #print(text, 'это сырое число')
-
-
-
-    #text = int(text)
-    #print(text)
 
 
 #delete user vpn

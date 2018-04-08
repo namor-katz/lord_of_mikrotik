@@ -27,7 +27,7 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 ctx.set_ciphers('RSA')
 api = connect(username = config.login, password = config.password, host = config.host, ssl_wrapper=ctx.wrap_socket, port=8729)
-
+#if not connect connect no ssl!
 
 # total count user vpn
 def list_count_vpn_user():
@@ -152,7 +152,7 @@ def create_vpn_user(vpn_name = '',  duration=3600):
     params = {'profile' : 'default', 'service' : 'pptp'}
     import generation_pass
     vpn_pass = generation_pass.create_password()
-    print(vpn_name)
+    #print(vpn_name)
     if len(vpn_name) == 0:
         import generation_name2
         vpn_name = generation_name2.create_name()

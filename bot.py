@@ -20,8 +20,6 @@ from time  import sleep
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console.
 
-bot = telebot.TeleBot(config.token)
-
 # event handling from keyboard
 text_help = '/count - количество юзеров, всего; \n /count_a - активных юзеров; \n \
 /list - показать имена всех; \n /list_a - показать имена активных; \n /create - создать нового юзера \n \
@@ -332,4 +330,4 @@ def my_time(message):
     
     bot.send_message(message.chat.id, time_o)
 
-bot.polling(none_stop=True)
+bot.pulling(none_stop=True)
