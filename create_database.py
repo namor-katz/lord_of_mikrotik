@@ -127,8 +127,6 @@ def add_admin_mikrotik(username_telegram, level):
 
     return success
 
-
-
 #list all admins
 def list_all_admins():
     conn = sqlite3.connect('database.sql')
@@ -144,7 +142,7 @@ def add_user_in_database(name, duration=3600):
     #from duration import date_off
     from add_time import add_data2
     #off = date_off()
-    data = add_data2(name)
+    data = add_data2(duration)
     date_create = data[0]
     date_off = data[1]
     
@@ -157,4 +155,41 @@ def add_user_in_database(name, duration=3600):
     conn.close
     return success
 
+def user_exist(name):
+    """this user name - exist?"""
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM vpn_user WHERE username = ?", (name, ))
+    a = cursor.fetchone()
+    conn.close()
+    if a == None:
+        return False
+    else:
+        return True
+
+def add_time2(username,  duration):
+    """this function added extra time from select user"""
+    if user_exist(username) == True:
+        from add_time import add_data2
+        data = add_data2(duration)
+        date_create = data[0]
+        date_off = data[1]
+        conn = sqlite3.connect(db)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE vpn_user SET date_create = ?, date_off = ? WHERE username = ?", (date_create, date_off, username) )
+        conn.commit()
+        return True
+    else:
+        return False
 #whois(admin_id)
+
+#delete vpn_user from database
+def delete_user_from_database(name):
+    """delete user from database"""
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM vpn_user WHERE username = ?",  (name, ))
+    cursor.fetchone()
+    conn.commit()
+    conn.close()
+    #a = user_exist(name)

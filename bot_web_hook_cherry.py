@@ -16,6 +16,7 @@ from time  import sleep
 import cherrypy
 from os import getpid
 import os
+import dbworker
 
 #loggin in console
 logger = telebot.logger
@@ -37,8 +38,6 @@ pid_file = '/tmp/bot.pid'
 with open (pid_file,  'w',  encoding='utf-8') as ff:
     ff.write(your_pid)
 
-#set environment from web hooks
-#WEBHOOK_HOST = '138.201.174.71'
 import config
 WEBHOOK_PORT = config.WEBHOOK_PORT  # 443, 80, 88 или 8443 (порт должен быть открыт!)
 WEBHOOK_LISTEN = config.WEBHOOK_LISTEN
@@ -72,7 +71,7 @@ text_help = '/count - количество юзеров, всего; \n /count_a
 /delete - удалить юзера \n /disable - запретить юзера; \n /enable - разрешить юзера \n /add_admin - добавить нового администратора \n \
 /list_connect - кто подключен сейчас? \n /list_admins - список админов \n /my_time - сколько осталось времени? \n '
 
-text_no_id = 'увы, я тебя не знаю.'
+text_no_id = 'такого адмнинистратора нет. Попросите вас добавить.'
 #create castom keyboard
 markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
 itembtn1 = types.KeyboardButton('администраторы')
@@ -80,6 +79,7 @@ itembtn2 = types.KeyboardButton('пользователи')
 markup.add(itembtn1, itembtn2)
 #bot.send_message(m.chat.id, "нажми любую кнопку", reply_markup=markup)
 
+#create subkeyboard users
 markup2 = types.ReplyKeyboardMarkup(row_width=3,  resize_keyboard=True) #submenu users
 itembtn1 = types.KeyboardButton('создать')
 itembtn2 = types.KeyboardButton('удалить')
@@ -89,6 +89,7 @@ itembtn5 = types.KeyboardButton('подключенные')
 itembtn6 = types.KeyboardButton('всего')
 markup2.add(itembtn1, itembtn2,  itembtn3,  itembtn4,  itembtn5,  itembtn6)
 
+#create subkeyboard admins
 markup3 = types.ReplyKeyboardMarkup(row_width=3,  resize_keyboard=True) #submenu admins
 itembtn1 = types.KeyboardButton('добавить')
 itembtn2 = types.KeyboardButton('список')
@@ -126,7 +127,6 @@ def count_all_user(message):
         a = api_test3.list_count_vpn_user()
         b = str(a)
         bot.send_message(message.chat.id, b)
-
         #bot.send_message(message.chat.id, text_help)
 
     else:
@@ -184,48 +184,39 @@ def get_name_u(message, shear):
     else:
         return text
 
+
 #create new user vpn
-@bot.message_handler(regexp='создать')
+text_get_name = 'укажите имя нового пользователя, либо нажмите "отправить" чтобы имя создалось автоматически'
+text_get_time = 'укажите время, цифрами, в часах.'
+text_final = 'пробую создать пользователя...'
+
+@bot.message_handler(commands=['create'])
 def create_user(message):
     '''this function create new user vpn, set random name - cocteil
     and generation password. send it in chat'''
     au = whois(message.chat.username)
     if au[0] == True and au[1] <= 1:
-        text = message.text[7:]
-        text = text.strip()
-        print(text)
-        from generation_name2 import create_name
-        zero_name = create_name()
-        if text == None:
-            #
-            bot.send_message(message.chat.id,  'задай имя')
-            text = message.text[7:]
-            #
-            duration = 3600
-        elif text.isdigit() == True:
-            #print('это же число!')
-            if text == 0:
-                duration = 3600
-            else:
-                duration = int(text) * 3600
-        elif len(text) == 0:
-            #
-            bot.send_message(message.chat.id,  'задай имя')
-            text = message.text[7:]
-            #
-            duration = 3600
+        #state = dbworker.get_current_state(message.chat.id)
+        bot.send_message(message.chat.id,  text_get_name)
+        dbworker.set_state(message.chat.id, config.States.S_ENTER_NAME.value)
+        #state = dbworker.get_current_state(message.chat.id)
+        #if state == config.States.S_START.value:
+            
+            #dbworker.set_state(message.chat.id, config.States.S_ENTER_NAME.value)
+            #name = get_name(message)
+            #if len(name) == 0:
+                #from generation_name2 import create_name
+                #name = create_name()
+        #else:
+            #pass
+        ''''
+        state = dbworker.get_current_state(message.chat.id)
+        if state == config.States.S_TIME.value:
+            bot.send_message(message.chat.id,  text_get_time)
+            time_user = get_time(message)
         else:
-            from create_mit_name import create_mit_name
-            #print('а я текст который прилетит',  text)
-            row_name = create_mit_name(text)
-            duration = row_name[1]
-            duration = int(duration)
-            #print('я дуратион,',   duration,  'мой тип',  type(duration))
-            zero_name = row_name[0]
-            #print('я зеро нейм',  zero_name)
-            bot.send_message(message.chat.id, 'пробуем принять имя')
-
-            #exit()
+            pass
+           
         a = api_test3.create_vpn_user(zero_name,  duration)
         b = a['name']
         b = str(b)
@@ -233,10 +224,47 @@ def create_user(message):
         c = str(c)
         d = 'логин ' + b + ' пароль ' + c
         bot.send_message(message.chat.id, d)
+        '''
     else:
         bot.send_message(message.chat.id, 'что то не то с правами. не буду создавать')
         pass
 
+@bot.message_handler(commands=["reset"])
+def cmd_reset(message):
+    bot.send_message(message.chat.id, "clear")
+    dbworker.set_state(message.chat.id, config.States.S_ENTER_NAME.value)
+
+@bot.message_handler(func=lambda message: dbworker.get_current_state(message.chat.id) == config.States.S_ENTER_NAME.value)
+def get_name(message):
+    '''get name if exist, set next step - get time'''
+    bot.send_message(message.chat.id,  text_get_time)
+    name = message.text
+    name = name.strip()
+    name2 = name + ' - это имя'
+    bot.send_message(message.chat.id,  name2)
+    dbworker.set_state(message.chat.id, config.States.S_ENTER_TIME.value)
+    print('я есть имя: ',  name)
+    if name.isdigit():
+        str(name)
+    #dbworker.save_name(message.chat.id,  name)
+
+@bot.message_handler(func=lambda message: dbworker.get_current_state(message.chat.id) == config.States.S_ENTER_TIME.value)
+def get_time(message):
+     '''get time from user to poweroff'''
+     bot.send_message(message.chat.id,  text_final)
+     time_user = message.text[0:]
+     time_user = time_user.strip()
+     time_user = str(time_user)
+     #print('я есть время: ',  time_user)
+     dbworker.save_time(message.chat.id,  time_user)
+     dbworker.set_state(message.chat.id, config.States.S_ENTER_FINAL.value)
+     
+     return True #was shreiben?
+
+@bot.message_handler(func=lambda message: dbworker.get_current_state(message.chat.id) == config.States.S_ENTER_FINAL.value)
+def final_create(message):
+    pass
+    
 
 #delete user vpn
 @bot.message_handler(commands=['delete'])

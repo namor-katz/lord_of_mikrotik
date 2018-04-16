@@ -3,12 +3,14 @@
 
 from time import time
 
-def add_data2(username,  duration=3600):
+def add_data2(duration):
+    #print('я адд тайм',  duration)
     date_create = time()
     date_create = int(date_create)
-    date_off = date_create + duration
+    date_off = date_create + int(duration) * 3600
     return date_create,  date_off
 
+#def add_extra_data2(dur):
 '''
 def who_poweroff():
     conn = sqlite3.connect(db)

@@ -147,7 +147,7 @@ def remove_vpn_user(name_input):
     
 
 #create user vpn
-def create_vpn_user(vpn_name = '',  duration=3600):
+def create_vpn_user(vpn_name,  duration):
     #users = api(cmd='/ppp/secret/print')
     params = {'profile' : 'default', 'service' : 'pptp'}
     import generation_pass
@@ -164,12 +164,15 @@ def create_vpn_user(vpn_name = '',  duration=3600):
     api(cmd='/ppp/secret/add', **params)
     #from create_database import add_user_in_database
     #add_user_in_database(vpn_name)
-    from add_time import add_data2
-    add_data2(vpn_name,  duration)
+    #from add_time import add_data2
+    #print('я дуратион из апи ',  duration)
+    #from duration import date_off #!!
+    #time_of = date_off(time_off)
+    #a = add_data2(duration) #!!
     #date_create = a[0]
     #date_off = a[1]
     from create_database import add_user_in_database
-    add_user_in_database(vpn_name,  duration)
+    add_user_in_database(vpn_name, duration)
     '''
     from duration import date_off
     print(delta)
@@ -201,14 +204,13 @@ def time_left(username):
      from create_database import time_to_poweroff
      a = time_to_poweroff(username)
      if a == None:
-         pass
-         time_left1 = 0
-         return time_left1
+         #time_left1 = 0
+         return False
      else:
          date_off = a[0]
          date_real = time()
          time_left1 = date_off - int(date_real)
-         print('я из апи',  time_left1)
+         #print('я из апи',  time_left1)
          return time_left1
          
      
